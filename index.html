@@ -1,229 +1,242 @@
-<html lang="ar" dir="rtl" style="--accent: #42efad; --accent-rgb: 66, 239, 173;">
+<!doctype html>
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
-  <title>مشغل البث الاحترافي مع الهيدرات المخصصة</title>
-  
-  <!-- مكتبة HLS.js لتشغيل البث الحي -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.min.js"></script>
-  <!-- مكتبة Shaka Player لدعم تشغيل القنوات المحمية عبر DRM (إن وجد) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
-
-  <style>
-    body {
-      margin: 0;
-      background-color: #050908;
-      color: #fff;
-      font-family: system-ui, -apple-system, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 15px;
-      box-sizing: border-box;
-    }
-    .config-box {
-      width: 100%;
-      max-width: 900px;
-      background: #111a16;
-      border: 1px solid #1f3329;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .config-box h3 {
-      margin-top: 0;
-      color: #42efad;
-      font-size: 18px;
-    }
-    .input-row {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 12px;
-    }
-    .input-group {
-      flex: 1;
-      margin-bottom: 10px;
-    }
-    .input-group.full {
-      width: 100%;
-    }
-    .input-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 13px;
-      color: #a0b3a8;
-    }
-    .input-group input {
-      width: 100%;
-      padding: 10px 14px;
-      background: #0a110e;
-      border: 1px solid #243d31;
-      color: #fff;
-      border-radius: 6px;
-      box-sizing: border-box;
-      font-size: 13px;
-    }
-    .input-group input:focus {
-      outline: none;
-      border-color: #42efad;
-    }
-    .action-btn {
-      background: #42efad;
-      color: #050908;
-      border: none;
-      padding: 12px 24px;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 15px;
-      width: 100%;
-      transition: background 0.2s;
-    }
-    .action-btn:hover { background: #34d091; }
-
-    .page-shell { width: 100%; max-width: 900px; }
-    .player-card {
-      position: relative;
-      width: 100%;
-      background: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.8);
-    }
-    .video-stage {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16/9;
-      background: #000;
-    }
-    video { width: 100%; height: 100%; display: block; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مشغّل البث المباشر</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c1220;--pn:#131b2e;--ln:#243049;--tx:#e9eefb;--mu:#8b97b3;--ac:#7aa2ff;--lv:#ff5a6e;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--tx);font:15px/1.6 "IBM Plex Sans Arabic",system-ui,sans-serif;max-width:1280px;margin:auto;padding:16px}
+button,input,select{font:inherit;color:inherit}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+h1{font-size:20px;font-weight:600}
+h2{font-size:14px;font-weight:600;color:var(--mu)}
+.row{display:flex;gap:8px}
+.b,#u,#set input,#set select,#q{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:8px 14px}
+.b{cursor:pointer}
+.b.p{background:var(--ac);border-color:var(--ac);color:#0c1220;font-weight:600;padding:0 22px}
+#u{flex:1;min-width:0;padding:13px 14px;text-align:start}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+#set{display:grid;gap:10px;background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:14px;margin-top:10px}
+#set label{display:grid;gap:4px;color:var(--mu);font-size:13px}
+#set input,#set select{background:var(--bg);color:var(--tx)}
+summary{cursor:pointer;color:var(--ac)}
+pre{direction:ltr;text-align:left;font:12px/1.5 ui-monospace,Consolas,monospace;background:var(--bg);padding:10px;border-radius:8px;overflow:auto;margin-top:8px;user-select:all}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;margin-top:14px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+#st{position:relative;direction:ltr;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:16/9}
+#st:fullscreen{border-radius:0;aspect-ratio:auto}
+video{width:100%;height:100%;display:block;object-fit:contain}
+#ms{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--mu);direction:rtl;white-space:pre-line;pointer-events:none}
+#st.busy #ms{padding-top:110px}
+#st.busy::after{content:"";position:absolute;top:38%;left:50%;width:42px;height:42px;margin:-21px;border:3px solid rgba(255,255,255,.25);border-top-color:var(--ac);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(1turn)}}
+@media(prefers-reduced-motion:reduce){#st.busy::after{animation-duration:3s}}
+#sx{position:absolute;top:10px;left:10px;display:none;background:rgba(0,0,0,.7);padding:8px 12px;border-radius:8px;font-size:12px;line-height:1.7;direction:rtl;white-space:pre;font-variant-numeric:tabular-nums}
+#sx.on,#mn.on{display:block}
+#mn{position:absolute;right:14px;bottom:70px;display:none;background:rgba(19,27,46,.97);border:1px solid var(--ln);border-radius:10px;padding:6px;min-width:150px;max-height:60%;overflow:auto;direction:rtl}
+#mn button{display:block;width:100%;text-align:right;background:none;border:0;padding:8px 12px;border-radius:6px;cursor:pointer}
+#mn button:hover{background:var(--ln)}
+#mn .on{color:var(--ac);font-weight:600}
+#ct{position:absolute;inset:auto 0 0;padding:30px 14px 10px;background:linear-gradient(transparent,rgba(0,0,0,.8));transition:opacity .2s}
+#st.idle #ct{opacity:0}
+#st.idle{cursor:none}
+.cr{display:flex;align-items:center;gap:4px}
+.cb{background:none;border:0;color:#fff;min-width:36px;height:36px;padding:0 8px;border-radius:8px;cursor:pointer;display:grid;place-items:center;font-size:13px;white-space:nowrap}
+.cb:hover{background:rgba(255,255,255,.16)}
+.cb svg{width:22px;height:22px;fill:currentColor}
+#lv{font-weight:600}
+#lv::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--lv);margin-inline-end:6px}
+#lv.off{color:#aab3c9}
+#lv.off::before{background:#7b859c}
+#tm{font-size:13px;font-variant-numeric:tabular-nums;padding:0 6px;color:#dfe6f8}
+#vl{width:70px;accent-color:var(--ac)}
+#sk{width:100%;height:18px;-webkit-appearance:none;appearance:none;background:none;cursor:pointer;--p:0%;--b:0%}
+#sk::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,var(--ac) var(--p),rgba(255,255,255,.4) var(--p) var(--b),rgba(255,255,255,.18) var(--b))}
+#sk::-moz-range-track{height:4px;border-radius:2px;background:linear-gradient(to right,var(--ac) var(--p),rgba(255,255,255,.4) var(--p) var(--b),rgba(255,255,255,.18) var(--b))}
+#sk::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#fff;margin-top:-4px}
+#sk::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:#fff}
+aside{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto}
+#q{width:100%}
+.lst{display:flex;flex-direction:column;gap:2px}
+.it{text-align:start;background:none;border:0;padding:7px 10px;border-radius:8px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%}
+.it:hover{background:var(--ln)}
+</style>
 </head>
 <body>
-
-  <!-- لوحة التحكم لإدخال الرابط والهيدرات كاملة -->
-  <div class="config-box">
-    <h3>إعدادات المشغل والهيدرات المخصصة (Headers & DRM)</h3>
-    
-    <div class="input-group full">
-      <label for="streamUrl">رابط البث (Stream URL / m3u8 / master.css):</label>
-      <input type="text" id="streamUrl" placeholder="https://..." value="https://smarter.majedcss.site/live/ch1/972574ae336c4e3baf77c6efdccded2c.1793215298.1793820098.0.905dfb639868db3013e2c764094055210cc144ebe23e0e1957c7fbe716745ab3/master.css">
-    </div>
-
-    <div class="input-row">
-      <div class="input-group">
-        <label for="headerOrigin">Origin:</label>
-        <input type="text" id="headerOrigin" placeholder="https://domain.com" value="https://live.xn----zmcaegc7cl3msazv.com">
-      </div>
-      <div class="input-group">
-        <label for="headerReferer">Referer:</label>
-        <input type="text" id="headerReferer" placeholder="https://domain.com/">
-      </div>
-    </div>
-
-    <div class="input-row">
-      <div class="input-group">
-        <label for="headerUserAgent">User-Agent:</label>
-        <input type="text" id="headerUserAgent" placeholder="Mozilla/5.0 ...">
-      </div>
-      <div class="input-group">
-        <label for="headerCookie">Cookie (إذا وجد):</label>
-        <input type="text" id="headerCookie" placeholder="key=value; ...">
-      </div>
-    </div>
-
-    <div class="input-group full">
-      <label for="drmKey">DRM Key (اختياري - بصيغة KID:Key):</label>
-      <input type="text" id="drmKey" placeholder="مثال: a1b2c3d4...:e5f6g7h8...">
-    </div>
-
-    <button class="action-btn" onclick="initCustomPlayer()">تشغيل البث بالهيدرات الجديدة</button>
-  </div>
-
-  <main class="page-shell">
-    <section class="player-card">
-      <div class="video-stage" dir="ltr">
-        <video id="liveVideo" controls autoplay playsinline crossorigin="anonymous"></video>
-      </div>
-    </section>
-  </main>
-
-  <script>
-    let hlsInstance = null;
-
-    async function initCustomPlayer() {
-      const video = document.getElementById('liveVideo');
-      const url = document.getElementById('streamUrl').value.trim();
-      const origin = document.getElementById('headerOrigin').value.trim();
-      const referer = document.getElementById('headerReferer').value.trim();
-      const userAgent = document.getElementById('headerUserAgent').value.trim();
-      const cookie = document.getElementById('headerCookie').value.trim();
-      const drmKey = document.getElementById('drmKey').value.trim();
-
-      if (!url) {
-        alert("الرجاء إدخال رابط البث!");
-        return;
-      }
-
-      if (hlsInstance) {
-        hlsInstance.destroy();
-      }
-
-      // إعداد هيدرات الـ XHR المخصصة لتمريرها مع كل طلب يطلبه المشغل
-      if (Hls.isSupported()) {
-        hlsInstance = new Hls({
-          xhrSetup: function (xhr, requestUrl) {
-            xhr.open('GET', requestUrl, true);
-            
-            // حقن الـ Origin
-            if (origin) xhr.setRequestHeader('Origin', origin);
-            // حقن الـ Referer (إذا لم يُحدد، نستخدم الـ Origin افتراضياً)
-            if (referer) {
-              xhr.setRequestHeader('Referer', referer);
-            } else if (origin) {
-              xhr.setRequestHeader('Referer', origin + '/');
-            }
-            // حقن الـ User-Agent
-            if (userAgent) xhr.setRequestHeader('User-Agent', userAgent);
-            // حقن الـ Cookie
-            if (cookie) xhr.setRequestHeader('Cookie', cookie);
-          }
-        });
-
-        hlsInstance.loadSource(url);
-        hlsInstance.attachMedia(video);
-
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
-          video.play().catch(e => console.log("Auto-play restricted"));
-        });
-
-        hlsInstance.on(Hls.Events.ERROR, function (event, data) {
-          if (data.fatal) {
-            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-              hlsInstance.startLoad();
-            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-              hlsInstance.recoverMediaError();
-            } else {
-              hlsInstance.destroy();
-            }
-          }
-        });
-
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = url;
-        video.addEventListener('loadedmetadata', function () {
-          video.play();
-        });
-      }
-    }
-
-    // التشغيل التلقائي عند فتح الصفحة بالقيم الافتراضية
-    window.onload = function() {
-      initCustomPlayer();
-    };
-  </script>
-
+<header><h1>مشغّل البث المباشر</h1><button class="b" id="gb">الإعدادات</button></header>
+<form class="row" id="f">
+<input id="u" dir="auto" inputmode="url" autocomplete="off" spellcheck="false" aria-label="رابط البث" placeholder="ألصق رابط البث: m3u8 أو mpd أو ts أو flv أو mp4 أو قائمة m3u">
+<button class="b p">تشغيل</button>
+</form>
+<section id="set" hidden>
+<label>طريقة تجاوز CORS
+<select id="md"><option value="auto">تلقائي: مباشر ثم عبر الوسيط</option><option value="always">دائمًا عبر الوسيط</option><option value="never">بدون وسيط</option></select></label>
+<label>رابط الوسيط (ضع {url} مكان رابط البث)
+<input id="px" dir="ltr"></label>
+<details><summary>وسيط خاص بك على Cloudflare Workers (الأكثر ثباتًا)</summary>
+<pre>export default{async fetch(q){
+const u=new URL(q.url).searchParams.get('url');
+const c={'access-control-allow-origin':'*','access-control-allow-headers':'*'};
+if(q.method==='OPTIONS')return new Response(null,{headers:c});
+if(!u)return new Response('missing url',{status:400});
+const h=new Headers(),g=q.headers.get('range');
+if(g)h.set('range',g);
+const r=await fetch(u,{headers:h,redirect:'follow'});
+const o=new Headers(r.headers);
+o.set('access-control-allow-origin','*');
+o.set('access-control-expose-headers','*');
+return new Response(r.body,{status:r.status,headers:o})}}
+// ثم ضع: https://اسمك.workers.dev/?url={url}</pre></details>
+</section>
+<div class="grid">
+<div id="st">
+<video id="v" playsinline></video>
+<div id="ms">ألصق رابطًا ثم اضغط «تشغيل».
+يدعم HLS وDASH وMPEG-TS وFLV وMP4 وقوائم M3U.</div>
+<div id="sx"></div>
+<div id="mn"></div>
+<div id="ct">
+<input id="sk" type="range" min="0" max="1000" step="1" value="0" aria-label="شريط التقدم">
+<div class="cr">
+<button class="cb" id="pl" aria-label="تشغيل أو إيقاف"></button>
+<button class="cb" id="mu" aria-label="كتم الصوت"></button>
+<input id="vl" type="range" min="0" max="1" step="0.05" value="1" aria-label="مستوى الصوت">
+<button class="cb" id="lv" hidden>مباشر</button>
+<span id="tm"></span>
+<span style="flex:1"></span>
+<button class="cb" id="in">معلومات</button>
+<button class="cb" id="sp" aria-label="السرعة">1×</button>
+<button class="cb" id="qb" aria-label="الجودة">—</button>
+<button class="cb" id="pp" aria-label="صورة داخل صورة"></button>
+<button class="cb" id="fs" aria-label="ملء الشاشة"></button>
+</div></div></div>
+<aside>
+<div id="ls" hidden><h2>القنوات</h2><input id="q" dir="auto" placeholder="ابحث في القنوات"><div class="lst" id="lst"></div></div>
+<h2>آخر الروابط</h2><div class="lst" id="hs"></div>
+</aside>
+</div>
+<script>
+const $=s=>document.querySelector(s),v=$('#v'),st=$('#st');
+const L=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+const S=(k,x)=>{try{localStorage.setItem(k,JSON.stringify(x))}catch(e){}};
+const cfg={mode:'auto',proxy:'https://corsproxy.io/?url={url}',...L('cfg',{})};
+let hist=L('hist',[]),list=[],gen=0,eng=null,order=[],idx=0,proxied=false,cur='',wd,seeking=0;
+const pxf=u=>cfg.proxy.replace('{url}',encodeURIComponent(u)),px=u=>proxied?pxf(u):u;
+const CDN={hls:'https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js',dash:'https://cdn.jsdelivr.net/npm/dashjs@4.7.4/dist/dash.all.min.js',ts:'https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.js'},got={};
+const need=n=>{n=n==='flv'?'ts':n;return !CDN[n]?Promise.resolve():got[n]||(got[n]=new Promise((ok,no)=>{const s=document.createElement('script');s.src=CDN[n];s.onload=ok;s.onerror=()=>{delete got[n];no('تعذّر تحميل مكتبة التشغيل')};document.head.append(s)}))};
+const msg=(t,b)=>{$('#ms').textContent=t;st.classList.toggle('busy',!!b)};
+const kind=u=>{const p=u.split(/[?#]/)[0].toLowerCase();
+ if(/\.m3u$/.test(p)||/get\.php|type=m3u/i.test(u))return'list';
+ return /\.m3u8$/.test(p)?'hls':/\.mpd$/.test(p)?'dash':/\.flv$/.test(p)?'flv':/\.m?ts$/.test(p)?'ts':/\.(mp4|m4v|webm|mkv|mov|mp3|aac|m4a|ogg|opus|wav)$/.test(p)?'native':''};
+const lvl=(i,h,b)=>({i,t:h?h+'p':Math.round(b/1e3)+'k',w:h||b});
+/* المحرّكات */
+const E={
+ native(u){v.src=px(u);v.play().catch(()=>{});return{name:'Native',destroy(){}}},
+ hls(u,g){
+  if(!window.Hls||!Hls.isSupported())return E.native(u,g);
+  const h=new Hls({lowLatencyMode:true,xhrSetup:(x,l)=>x.open('GET',px(l),true)}),o={name:'HLS',live:false,destroy:()=>h.destroy()};
+  h.on(Hls.Events.MANIFEST_PARSED,()=>{o.q=h.levels.map((l,i)=>lvl(i,l.height,l.bitrate)).sort((a,b)=>b.w-a.w);v.play().catch(()=>{})});
+  h.on(Hls.Events.LEVEL_LOADED,(_,d)=>o.live=d.details.live);
+  h.on(Hls.Events.ERROR,(_,d)=>{if(!d.fatal||g!==gen)return;
+   if(d.type===Hls.ErrorTypes.MEDIA_ERROR&&(o.r=(o.r||0)+1)<3)return h.recoverMediaError();
+   if(d.details==='manifestParsingError')asList(cur).then(ok=>ok||g!==gen||next(d.details));else next(d.details)});
+  o.set=i=>h.currentLevel=i;o.now=()=>h.currentLevel;o.sel=()=>h.autoLevelEnabled?-1:h.currentLevel;o.bw=()=>h.bandwidthEstimate;
+  h.loadSource(u);h.attachMedia(v);return o},
+ dash(u,g){
+  const p=dashjs.MediaPlayer().create(),ev=dashjs.MediaPlayer.events,o={name:'DASH',live:false,s:-1,destroy:()=>p.destroy()};
+  p.extend('RequestModifier',()=>({modifyRequestURL:px,modifyRequestHeader:x=>x}),true);
+  p.on(ev.STREAM_INITIALIZED,()=>{o.live=p.isDynamic();o.q=p.getBitrateInfoListFor('video').map(x=>lvl(x.qualityIndex,x.height,x.bitrate)).sort((a,b)=>b.w-a.w)});
+  p.on(ev.ERROR,e=>g===gen&&next(e.error&&e.error.message));
+  o.set=i=>{o.s=i;p.updateSettings({streaming:{abr:{autoSwitchBitrate:{video:i<0}}}});if(i>=0)p.setQualityFor('video',i)};
+  o.sel=()=>o.s;o.now=()=>p.getQualityFor('video');
+  p.initialize(v,u,true);return o},
+ ts(u,g,t='mpegts'){
+  const p=mpegts.createPlayer({type:t,isLive:true,url:px(u)},{liveBufferLatencyChasing:true});
+  p.on(mpegts.Events.ERROR,(a,b)=>g===gen&&next(b));
+  p.attachMediaElement(v);p.load();p.play();
+  return{name:t==='flv'?'FLV':'MPEG-TS',live:true,destroy:()=>p.destroy()}},
+ flv:(u,g)=>E.ts(u,g,'flv')
+};
+function kill(){clearTimeout(wd);if(eng){try{eng.destroy()}catch(e){}eng=null}v.removeAttribute('src');v.load()}
+function run(){const g=gen,n=order[idx];msg('جارٍ الاتصال'+(proxied?' عبر الوسيط':'')+'…',1);
+ need(n).then(()=>{if(g!==gen)return;wd=setTimeout(()=>g===gen&&v.readyState<2&&next('timeout'),15000);eng=E[n](cur,g)}).catch(e=>g===gen&&next(e))}
+function next(why){console.warn('player:',why);gen++;kill();
+ if(++idx<order.length)return run();
+ if(cfg.mode==='auto'&&!proxied){proxied=true;idx=0;return run()}
+ msg('تعذّر تشغيل الرابط.\nتحقق من أنه يعمل. وإن كان السبب CORS أو رابط http داخل صفحة https فاستخدم وسيطك الخاص من الإعدادات.')}
+function play(u){u=(u||'').trim().split('|')[0];if(!u)return;if(!/^https?:\/\//i.test(u))u='https://'+u;
+ gen++;kill();cur=u;proxied=cfg.mode==='always';idx=0;
+ hist=[u,...hist.filter(x=>x!==u)].slice(0,12);S('hist',hist);renderHist();
+ const k=kind(u);if(k==='list')return asList(u).then(ok=>ok||msg('تعذّر قراءة القائمة.'));
+ order=k?[k]:['native','hls','ts','dash'];run()}
+/* قوائم M3U */
+const parse=t=>{const o=[];let n='';for(const l of t.split(/\r?\n/)){const s=l.trim();if(s.startsWith('#EXTINF'))n=s.slice(s.lastIndexOf(',')+1).trim();else if(s&&!s.startsWith('#')){o.push({n:n||s,u:s});n=''}}return o};
+async function asList(u){const g=gen,m=cfg.mode;msg('جارٍ قراءة القائمة…',1);
+ for(const p of m==='always'?[1]:m==='never'?[0]:[0,1]){
+  try{const r=await fetch(p?pxf(u):u);if(!r.ok)continue;const x=await r.text();
+   if(!x.includes('#EXTINF')||x.includes('#EXT-X-'))return false;
+   if(g!==gen)return true;
+   gen++;kill();list=parse(x);renderList();msg('تم تحميل '+list.length+' قناة. اختر قناة من القائمة.');return true}catch(e){}}
+ return false}
+const item=(t,u)=>{const b=document.createElement('button');b.className='it';b.dir='auto';b.textContent=t;b.title=u;b.onclick=()=>{$('#u').value=u;play(u)};return b};
+function renderList(){const q=$('#q').value.toLowerCase();$('#ls').hidden=!list.length;
+ $('#lst').replaceChildren(...list.filter(x=>x.n.toLowerCase().includes(q)).slice(0,300).map(x=>item(x.n,x.u)))}
+const renderHist=()=>$('#hs').replaceChildren(...hist.map(u=>item(u,u)));
+$('#q').oninput=renderList;
+/* الواجهة */
+const P={play:'M8 5v14l11-7z',pause:'M6 19h4V5H6v14zm8-14v14h4V5h-4z',vol:'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z',mute:'M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.8 8.8 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a9 9 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z',pip:'M19 11h-8v6h8v-6zm4 8V4.98C23 3.88 22.1 3 21 3H3c-1.1 0-2 .88-2 1.98V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2zm-2 .02H3V4.97h18v14.05z',fs:'M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z'};
+const ic=k=>`<svg viewBox="0 0 24 24"><path d="${P[k]}"/></svg>`;
+$('#pp').innerHTML=ic('pip');$('#fs').innerHTML=ic('fs');
+v.onplay=v.onpause=()=>$('#pl').innerHTML=ic(v.paused?'play':'pause');v.onpause();
+v.onvolumechange=()=>{$('#mu').innerHTML=ic(v.muted||!v.volume?'mute':'vol');$('#vl').value=v.muted?0:v.volume};v.onvolumechange();
+v.onwaiting=()=>st.classList.add('busy');
+v.onplaying=()=>msg('');
+v.onerror=()=>eng&&eng.name==='Native'&&next('media error');
+$('#pl').onclick=()=>v.paused?v.play():v.pause();
+$('#mu').onclick=()=>v.muted=!v.muted;
+$('#vl').oninput=e=>{v.volume=e.target.value;v.muted=false};
+$('#sk').oninput=e=>{const[a,b]=rng();v.currentTime=a+(b-a)*e.target.value/1000};
+$('#sk').onpointerdown=()=>seeking=1;addEventListener('pointerup',()=>seeking=0);
+[$('#sk'),$('#vl')].forEach(r=>r.addEventListener('change',()=>r.blur()));
+$('#lv').onclick=()=>{v.currentTime=rng()[1]-.5;v.play()};
+const fs=()=>document.fullscreenElement?document.exitFullscreen():st.requestFullscreen?st.requestFullscreen():v.webkitEnterFullscreen&&v.webkitEnterFullscreen();
+$('#fs').onclick=fs;v.ondblclick=fs;v.onclick=()=>$('#pl').click();
+$('#pp').onclick=()=>document.pictureInPictureElement?document.exitPictureInPicture():v.requestPictureInPicture&&v.requestPictureInPicture().catch(()=>{});
+$('#in').onclick=()=>$('#sx').classList.toggle('on');
+const menu=(a,c,fn)=>{const m=$('#mn');m.replaceChildren(...a.map(x=>{const b=document.createElement('button');b.textContent=x.t;b.className=x.v===c?'on':'';b.onclick=()=>{fn(x.v);m.classList.remove('on')};return b}));m.classList.add('on')};
+document.addEventListener('click',e=>{if(!e.target.closest('#mn,#qb,#sp'))$('#mn').classList.remove('on')});
+$('#sp').onclick=()=>menu([.5,.75,1,1.25,1.5,2].map(x=>({t:x+'×',v:x})),v.playbackRate,x=>{v.playbackRate=x;$('#sp').textContent=x+'×'});
+$('#qb').onclick=()=>eng&&eng.q&&menu([{t:'تلقائي',v:-1},...eng.q.map(x=>({t:x.t,v:x.i}))],eng.sel(),i=>eng.set(i));
+let it;const wake=()=>{st.classList.remove('idle');clearTimeout(it);it=setTimeout(()=>!v.paused&&st.classList.add('idle'),3000)};
+['mousemove','touchstart','keydown'].forEach(e=>st.addEventListener(e,wake,{passive:true}));
+addEventListener('keydown',e=>{const t=e.target;
+ if(t.matches('input,select,textarea')||(t.tagName==='BUTTON'&&(e.key===' '||e.key==='Enter')))return;
+ const m={' ':()=>$('#pl').click(),k:()=>$('#pl').click(),f:fs,m:()=>$('#mu').click(),l:()=>$('#lv').click(),i:()=>$('#in').click(),arrowleft:()=>v.currentTime-=10,arrowright:()=>v.currentTime+=10,arrowup:()=>v.volume=Math.min(1,v.volume+.1),arrowdown:()=>v.volume=Math.max(0,v.volume-.1)}[e.key.toLowerCase()];
+ if(m){e.preventDefault();m()}});
+/* الشريط والإحصاءات */
+const fmt=s=>{s=Math.max(0,s|0);const h=s/3600|0,m=s/60%60|0;return(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s%60).padStart(2,'0')};
+const rng=()=>v.seekable.length?[v.seekable.start(0),v.seekable.end(v.seekable.length-1)]:[0,isFinite(v.duration)?v.duration:0];
+function tick(){const[a,b]=rng(),t=v.currentTime,live=!!(eng&&eng.live)||v.duration===Infinity,d=b-a||1,k=$('#sk');let be=t;
+ for(let i=0;i<v.buffered.length;i++)if(v.buffered.start(i)<=t+.5&&v.buffered.end(i)>=be)be=v.buffered.end(i);
+ const p=b>a?(t-a)/d*100:0;if(!seeking)k.value=p*10;
+ k.style.setProperty('--p',p+'%');k.style.setProperty('--b',Math.min(100,(be-a)/d*100)+'%');
+ $('#lv').hidden=!live;$('#lv').classList.toggle('off',b-t>6);
+ $('#tm').textContent=live?(b-t>6?'-'+fmt(b-t):''):fmt(t)+' / '+fmt(v.duration||0);
+ const n=eng&&eng.now?eng.now():-1,lv=eng&&eng.q&&eng.q.find(x=>x.i===n);
+ $('#qb').textContent=eng&&eng.q&&eng.q.length?(eng.sel()<0?'تلقائي'+(lv?' '+lv.t:''):lv?lv.t:'—'):'—';
+ if($('#sx').classList.contains('on')){const q=v.getVideoPlaybackQuality&&v.getVideoPlaybackQuality();
+  $('#sx').textContent=[`المحرّك: ${eng?eng.name:'—'}${proxied?' عبر الوسيط':''}`,`الدقة: ${v.videoWidth}×${v.videoHeight}${lv?' ('+lv.t+')':''}`,`المخزون: ${(be-t).toFixed(1)} ث`,`إطارات مفقودة: ${q?q.droppedVideoFrames:0}`,eng&&eng.bw&&eng.bw()?`عرض النطاق: ${(eng.bw()/1e6).toFixed(1)} Mbps`:''].filter(Boolean).join('\n')}}
+setInterval(tick,500);
+/* الإعدادات */
+$('#md').value=cfg.mode;$('#px').value=cfg.proxy;
+$('#md').onchange=$('#px').onchange=()=>{cfg.mode=$('#md').value;cfg.proxy=$('#px').value.trim();S('cfg',cfg)};
+$('#gb').onclick=()=>$('#set').hidden=!$('#set').hidden;
+$('#f').onsubmit=e=>{e.preventDefault();play($('#u').value)};
+renderHist();
+</script>
 </body>
 </html>
