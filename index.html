@@ -1,0 +1,229 @@
+<html lang="ar" dir="rtl" style="--accent: #42efad; --accent-rgb: 66, 239, 173;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+  <title>مشغل البث الاحترافي مع الهيدرات المخصصة</title>
+  
+  <!-- مكتبة HLS.js لتشغيل البث الحي -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.min.js"></script>
+  <!-- مكتبة Shaka Player لدعم تشغيل القنوات المحمية عبر DRM (إن وجد) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background-color: #050908;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+      box-sizing: border-box;
+    }
+    .config-box {
+      width: 100%;
+      max-width: 900px;
+      background: #111a16;
+      border: 1px solid #1f3329;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .config-box h3 {
+      margin-top: 0;
+      color: #42efad;
+      font-size: 18px;
+    }
+    .input-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 12px;
+    }
+    .input-group {
+      flex: 1;
+      margin-bottom: 10px;
+    }
+    .input-group.full {
+      width: 100%;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 13px;
+      color: #a0b3a8;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 10px 14px;
+      background: #0a110e;
+      border: 1px solid #243d31;
+      color: #fff;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 13px;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #42efad;
+    }
+    .action-btn {
+      background: #42efad;
+      color: #050908;
+      border: none;
+      padding: 12px 24px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .action-btn:hover { background: #34d091; }
+
+    .page-shell { width: 100%; max-width: 900px; }
+    .player-card {
+      position: relative;
+      width: 100%;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.8);
+    }
+    .video-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+    }
+    video { width: 100%; height: 100%; display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- لوحة التحكم لإدخال الرابط والهيدرات كاملة -->
+  <div class="config-box">
+    <h3>إعدادات المشغل والهيدرات المخصصة (Headers & DRM)</h3>
+    
+    <div class="input-group full">
+      <label for="streamUrl">رابط البث (Stream URL / m3u8 / master.css):</label>
+      <input type="text" id="streamUrl" placeholder="https://..." value="https://smarter.majedcss.site/live/ch1/972574ae336c4e3baf77c6efdccded2c.1793215298.1793820098.0.905dfb639868db3013e2c764094055210cc144ebe23e0e1957c7fbe716745ab3/master.css">
+    </div>
+
+    <div class="input-row">
+      <div class="input-group">
+        <label for="headerOrigin">Origin:</label>
+        <input type="text" id="headerOrigin" placeholder="https://domain.com" value="https://live.xn----zmcaegc7cl3msazv.com">
+      </div>
+      <div class="input-group">
+        <label for="headerReferer">Referer:</label>
+        <input type="text" id="headerReferer" placeholder="https://domain.com/">
+      </div>
+    </div>
+
+    <div class="input-row">
+      <div class="input-group">
+        <label for="headerUserAgent">User-Agent:</label>
+        <input type="text" id="headerUserAgent" placeholder="Mozilla/5.0 ...">
+      </div>
+      <div class="input-group">
+        <label for="headerCookie">Cookie (إذا وجد):</label>
+        <input type="text" id="headerCookie" placeholder="key=value; ...">
+      </div>
+    </div>
+
+    <div class="input-group full">
+      <label for="drmKey">DRM Key (اختياري - بصيغة KID:Key):</label>
+      <input type="text" id="drmKey" placeholder="مثال: a1b2c3d4...:e5f6g7h8...">
+    </div>
+
+    <button class="action-btn" onclick="initCustomPlayer()">تشغيل البث بالهيدرات الجديدة</button>
+  </div>
+
+  <main class="page-shell">
+    <section class="player-card">
+      <div class="video-stage" dir="ltr">
+        <video id="liveVideo" controls autoplay playsinline crossorigin="anonymous"></video>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let hlsInstance = null;
+
+    async function initCustomPlayer() {
+      const video = document.getElementById('liveVideo');
+      const url = document.getElementById('streamUrl').value.trim();
+      const origin = document.getElementById('headerOrigin').value.trim();
+      const referer = document.getElementById('headerReferer').value.trim();
+      const userAgent = document.getElementById('headerUserAgent').value.trim();
+      const cookie = document.getElementById('headerCookie').value.trim();
+      const drmKey = document.getElementById('drmKey').value.trim();
+
+      if (!url) {
+        alert("الرجاء إدخال رابط البث!");
+        return;
+      }
+
+      if (hlsInstance) {
+        hlsInstance.destroy();
+      }
+
+      // إعداد هيدرات الـ XHR المخصصة لتمريرها مع كل طلب يطلبه المشغل
+      if (Hls.isSupported()) {
+        hlsInstance = new Hls({
+          xhrSetup: function (xhr, requestUrl) {
+            xhr.open('GET', requestUrl, true);
+            
+            // حقن الـ Origin
+            if (origin) xhr.setRequestHeader('Origin', origin);
+            // حقن الـ Referer (إذا لم يُحدد، نستخدم الـ Origin افتراضياً)
+            if (referer) {
+              xhr.setRequestHeader('Referer', referer);
+            } else if (origin) {
+              xhr.setRequestHeader('Referer', origin + '/');
+            }
+            // حقن الـ User-Agent
+            if (userAgent) xhr.setRequestHeader('User-Agent', userAgent);
+            // حقن الـ Cookie
+            if (cookie) xhr.setRequestHeader('Cookie', cookie);
+          }
+        });
+
+        hlsInstance.loadSource(url);
+        hlsInstance.attachMedia(video);
+
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, function () {
+          video.play().catch(e => console.log("Auto-play restricted"));
+        });
+
+        hlsInstance.on(Hls.Events.ERROR, function (event, data) {
+          if (data.fatal) {
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+              hlsInstance.startLoad();
+            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              hlsInstance.recoverMediaError();
+            } else {
+              hlsInstance.destroy();
+            }
+          }
+        });
+
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+        video.addEventListener('loadedmetadata', function () {
+          video.play();
+        });
+      }
+    }
+
+    // التشغيل التلقائي عند فتح الصفحة بالقيم الافتراضية
+    window.onload = function() {
+      initCustomPlayer();
+    };
+  </script>
+
+</body>
+</html>
